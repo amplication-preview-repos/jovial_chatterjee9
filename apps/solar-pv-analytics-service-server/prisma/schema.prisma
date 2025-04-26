@@ -1,0 +1,85 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Inverter {
+  createdAt           DateTime           @default(now())
+  id                  String             @id @default(cuid())
+  model               String?
+  serialNumber        String?
+  solarInstallation   SolarInstallation? @relation(fields: [solarInstallationId], references: [id])
+  solarInstallationId String?
+  strings             StringModel[]
+  updatedAt           DateTime           @updatedAt
+}
+
+model SolarInstallation {
+  createdAt   DateTime   @default(now())
+  id          String     @id @default(cuid())
+  installedAt DateTime?
+  inverters   Inverter[]
+  location    String?
+  name        String?
+  updatedAt   DateTime   @updatedAt
+}
+
+model TimeSeriesData {
+  createdAt     DateTime                      @default(now())
+  id            String                        @id @default(cuid())
+  metricType    EnumTimeSeriesDataMetricType?
+  stringField   StringModel?                  @relation(fields: [stringFieldId], references: [id])
+  stringFieldId String?
+  timestamp     DateTime?
+  updatedAt     DateTime                      @updatedAt
+  value         Float?
+}
+
+model StringModel {
+  anomalies           Anomaly[]
+  createdAt           DateTime         @default(now())
+  id                  String           @id @default(cuid())
+  identifier          String?
+  inverter            Inverter?        @relation(fields: [inverterId], references: [id])
+  inverterId          String?
+  timeSeriesDataItems TimeSeriesData[]
+  updatedAt           DateTime         @updatedAt
+}
+
+model Anomaly {
+  createdAt     DateTime              @default(now())
+  description   String?
+  detectedAt    DateTime?
+  id            String                @id @default(cuid())
+  severity      EnumAnomalySeverity?
+  stringField   StringModel?          @relation(fields: [stringFieldId], references: [id])
+  stringFieldId String?
+  typeField     EnumAnomalyTypeField?
+  updatedAt     DateTime              @updatedAt
+}
+
+model McpContext {
+  contextName String?
+  createdAt   DateTime  @default(now())
+  id          String    @id @default(cuid())
+  lastRunAt   DateTime?
+  modelType   String?
+  parameters  Json?
+  updatedAt   DateTime  @updatedAt
+}
+
+enum EnumTimeSeriesDataMetricType {
+  Option1
+}
+
+enum EnumAnomalySeverity {
+  Option1
+}
+
+enum EnumAnomalyTypeField {
+  Option1
+}
